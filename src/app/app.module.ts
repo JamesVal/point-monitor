@@ -3,11 +3,13 @@ import { NgModule } from '@angular/core';
 
 
 import { AppComponent } from './app.component';
+import { CurrentMapComponent } from './current-map/current-map.component';
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    CurrentMapComponent
   ],
   imports: [
     BrowserModule
