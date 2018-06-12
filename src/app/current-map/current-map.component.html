@@ -4,6 +4,13 @@
   <button id="sim_alert_3" (click)="toggleAlert(2)">Toggle Point 3</button>
 </div>
 
+<div class="robot-buttons-container">
+  <button id="move_robot_forward" (mousedown)="robotDirection(1)" (mouseleave)="robotStop()" (mouseup)="robotStop()">Move Forward</button>
+  <button id="move_robot_backward" (mousedown)="robotDirection(2)" (mouseleave)="robotStop()" (mouseup)="robotStop()">Move Backward</button>
+  <button id="rotate_robot_counterclockwise" (mousedown)="robotRotate(1)" (mouseleave)="robotStop()" (mouseup)="robotStop()">Rotate Left</button>
+  <button id="rotate_robot_clockwise" (mousedown)="robotRotate(2)" (mouseleave)="robotStop()" (mouseup)="robotStop()">Rotate Right</button>
+</div>
+
 <div class="map-container">
   <canvas id="{{mapId}}" height="600" width="600"></canvas>
 </div>

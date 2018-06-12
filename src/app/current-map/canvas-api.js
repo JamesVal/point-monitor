@@ -47,11 +47,13 @@ class CanvasAPI {
     ctx.arc(current_point.xCoord, current_point.yCoord, current_point.pntWidth, 0, 2 * Math.PI);
     ctx.fill();
     
-    if (current_point.curSts) {
-      ctx.font = "32px Arial";
+    //if (current_point.curSts) {
+      ctx.font = "22px Arial";
       ctx.fillStyle = "white";
-      ctx.fillText("!",current_point.xCoord-(current_point.pntWidth/2)+3, current_point.yCoord-(current_point.pntWidth/2)+18);
-    }
+      ctx.textAlign = "center";
+      //ctx.fillText("!",current_point.xCoord-(current_point.pntWidth/2)+3, current_point.yCoord-(current_point.pntWidth/2)+18);
+      ctx.fillText(current_point.id,current_point.xCoord, current_point.yCoord+(current_point.pntWidth/2)-1);
+    //}
   }
   
   updatePingCircle(canvas_element, current_point) {
@@ -65,6 +67,20 @@ class CanvasAPI {
     ctx.stroke();
   }
 
+  updateRobotBodyPosition(canvas_element, current_robot) {
+    var ctx = canvas_element.getContext("2d");
+    
+    ctx.globalAlpha = 1.0;
+    
+    ctx.fillStyle = "white";
+    ctx.save();
+    ctx.translate(current_robot.xCoord,current_robot.yCoord);
+    ctx.rotate((current_robot.angle) * Math.PI / 180);
+    ctx.fillRect(0-(current_robot.width/2),0-(current_robot.height/2),current_robot.width, current_robot.height);
+    ctx.restore();
+    
+    //ctx.fillRect(current_robot.xCoord-(current_robot.width/2),current_robot.yCoord-(current_robot.height/2),current_robot.width, current_robot.height);
+  }
 }
 
 exports.default = CanvasAPI;

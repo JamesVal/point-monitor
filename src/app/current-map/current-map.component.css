@@ -1,8 +1,18 @@
 .debug-buttons-container {
   text-align: center;
+  cursor: default;
 }
 
 .debug-buttons-container button:hover {
+  cursor: pointer;
+}
+
+.robot-buttons-container {
+  text-align: center;
+  padding: 10px;
+}
+
+.robot-buttons-container button:hover {
   cursor: pointer;
 }
 
