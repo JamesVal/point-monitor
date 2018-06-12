@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { interval } from 'rxjs/observable/interval';
 
 import CanvasAPI from './canvas-api';
 
@@ -8,6 +9,9 @@ class PointLocations {
   yCoord: number;
   curSts: number;
   curFlow: number;
+  pntWidth: number;
+  circleRadius: number;
+  circleAlpha: number;
   
   constructor(lbl: string, xC: number, yC: number, cS: number, cF: number) {
     this.label = lbl;
@@ -15,6 +19,9 @@ class PointLocations {
     this.yCoord = yC;
     this.curSts = cS;
     this.curFlow = cF;
+    this.pntWidth = 15;
+    this.circleRadius = 15;
+    this.circleAlpha = 1.0;
   };
 }
 
@@ -30,11 +37,15 @@ export class CurrentMapComponent implements OnInit {
   canvasEle: any;
   canvasAPI: any;
   mapLocations: PointLocations[] = [];
+  frameInterval: number = -1;
 
+  defaultRadius: number = 15;
+  maxRadius: number = 100;
+  
   // JJV DEBUG - dummy data
   createDummyLocations() {
     for (var i = 0; i < 3; i++) {
-      var newLoc = new PointLocations("Point " + i, 100, (i+1)*100, 0, 0);
+      var newLoc = new PointLocations("Point " + i, 100, (i+1)*125, 0, 0);
 
       this.mapLocations.push(newLoc);
     }
@@ -45,20 +56,66 @@ export class CurrentMapComponent implements OnInit {
   updateCanvas() {
     this.canvasAPI.initializeCanvas(this.canvasEle);
     for (var curPntIdx = 0; curPntIdx < this.mapLocations.length; curPntIdx++) {
-      this.canvasAPI.createPointLocation(this.canvasEle,this.mapLocations[curPntIdx]);
+      this.canvasAPI.updatePointLocation(this.canvasEle,this.mapLocations[curPntIdx]);
+      if (this.mapLocations[curPntIdx].curSts) {
+        
+        this.canvasAPI.updatePingCircle(this.canvasEle,this.mapLocations[curPntIdx]);
+        this.mapLocations[curPntIdx].circleRadius += 3;
+        this.mapLocations[curPntIdx].circleAlpha -= .03;
+        
+        if (this.mapLocations[curPntIdx].circleAlpha < 0) {
+          this.mapLocations[curPntIdx].circleAlpha = 0;
+        }
+        
+        if (this.mapLocations[curPntIdx].circleRadius >= this.maxRadius) {
+          this.mapLocations[curPntIdx].circleRadius = this.defaultRadius;
+          this.mapLocations[curPntIdx].circleAlpha = 1.0;
+        }
+      } else {
+        this.mapLocations[curPntIdx].circleRadius = this.defaultRadius;
+        this.mapLocations[curPntIdx].circleAlpha = 1.0
+      }
+    }
+  }
+  
+  checkAnimate() {
+    var activeSts = 0;
+    
+    for (var curPntIdx = 0; curPntIdx < this.mapLocations.length; curPntIdx++) {
+      if (this.mapLocations[curPntIdx].curSts) {
+        activeSts = 1;
+      }
+    }
+                    
+    if (activeSts == 1) {
+      this.animatePingCircles();
+    }
+
+    if (activeSts != 1) {
+      this.stopPingCircles();
     }
   }
   
   toggleAlert(pointToBlink: number) {
     this.mapLocations[pointToBlink].curSts = this.mapLocations[pointToBlink].curSts ? 0 : 1;
     this.updateCanvas();
+    this.checkAnimate();
   }
   
-  setBlinkingAlert(pointToBlink: PointLocations) {
-    //this.canvasAPI
+  animatePingCircles() {
+    if (this.frameInterval == -1) {
+      var me = this;
+      this.frameInterval = setInterval(function() {
+        me.updateCanvas();
+      }, 25);
+    }
   }
   
-  stopsetBlinkingAlert(pointToBlink: PointLocations) {
+  stopPingCircles() {
+    if (this.frameInterval != -1 ) {
+      clearInterval(this.frameInterval);
+      this.frameInterval = -1;
+    }
   }
   
   constructor() { }
@@ -73,7 +130,6 @@ export class CurrentMapComponent implements OnInit {
   ngAfterViewInit() {
     this.canvasEle = document.getElementById(this.mapId);
     this.updateCanvas();
-    //this.canvasAPI.createAnimateCircle(c);
   }
 
 }

@@ -2,6 +2,10 @@
   text-align: center;
 }
 
-.debug-buttons {
+.debug-buttons-container {
   text-align: center;
+}
+
+.debug-buttons-container button:hover {
+  cursor: pointer;
 }

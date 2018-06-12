@@ -1,18 +1,41 @@
 class CanvasAPI {
   
-  initializeCanvas(canvas_element) {
+  createGrid(canvas_element) {
     var ctx = canvas_element.getContext("2d");
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,canvas_element.width, canvas_element.height);
+    
+    ctx.globalAlpha = .25;
+    ctx.strokeStyle = "#ccffcc";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var curX = 0; curX <= canvas_element.width; curX+=100) {
+      ctx.moveTo(curX,0);
+      ctx.lineTo(curX,canvas_element.height);
+    }
+    for (var curY = 0; curY <= canvas_element.height; curY+=100) {
+      ctx.moveTo(0,curY);
+      ctx.lineTo(canvas_element.width,curY);
+    }
+    ctx.stroke();
   }
   
-  createPointLocation(canvas_element, current_point) {
+  initializeCanvas(canvas_element) {
     var ctx = canvas_element.getContext("2d");
     
+    ctx.globalAlpha = 1.0;
+    //ctx.fillStyle = "#00004d";
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas_element.width, canvas_element.height);
     
+    this.createGrid(canvas_element);
+  }
+  
+  updatePointLocation(canvas_element, current_point) {
+    var ctx = canvas_element.getContext("2d");
+
+    ctx.globalAlpha = 1.0;
     ctx.fillStyle = "lightgray";
     ctx.beginPath();
-    ctx.arc(current_point.xCoord, current_point.yCoord, 6, 0, 2 * Math.PI);
+    ctx.arc(current_point.xCoord, current_point.yCoord, current_point.pntWidth+1, 0, 2 * Math.PI);
     ctx.fill();
     
     if (current_point.curSts) {
@@ -21,16 +44,27 @@ class CanvasAPI {
       ctx.fillStyle = "green";
     }
     ctx.beginPath();
-    ctx.arc(current_point.xCoord, current_point.yCoord, 5, 0, 2 * Math.PI);
+    ctx.arc(current_point.xCoord, current_point.yCoord, current_point.pntWidth, 0, 2 * Math.PI);
     ctx.fill();
+    
+    if (current_point.curSts) {
+      ctx.font = "32px Arial";
+      ctx.fillStyle = "white";
+      ctx.fillText("!",current_point.xCoord-(current_point.pntWidth/2)+3, current_point.yCoord-(current_point.pntWidth/2)+18);
+    }
   }
   
-  createAnimateCircle(canvas_element, current_point) {
+  updatePingCircle(canvas_element, current_point) {
+    var ctx = canvas_element.getContext("2d");
+    
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 5;
+    ctx.globalAlpha = current_point.circleAlpha;
+    ctx.beginPath();
+    ctx.arc(current_point.xCoord, current_point.yCoord, current_point.circleRadius, 0, 2 * Math.PI);
+    ctx.stroke();
   }
-  
-  startAnimateCircle(canvas_element, current_point) {
-  }
-  
+
 }
 
 exports.default = CanvasAPI;
