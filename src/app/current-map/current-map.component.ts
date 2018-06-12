@@ -6,10 +6,10 @@ class PointLocations {
   label: string;
   xCoord: number;
   yCoord: number;
-  curSts: boolean;
+  curSts: number;
   curFlow: number;
   
-  constructor(lbl: string, xC: number, yC: number, cS: boolean, cF: number) {
+  constructor(lbl: string, xC: number, yC: number, cS: number, cF: number) {
     this.label = lbl;
     this.xCoord = xC;
     this.yCoord = yC;
@@ -27,20 +27,40 @@ class PointLocations {
 export class CurrentMapComponent implements OnInit {
 
   mapId: string = "map-canvas";
+  canvasEle: any;
   canvasAPI: any;
   mapLocations: PointLocations[] = [];
 
   // JJV DEBUG - dummy data
   createDummyLocations() {
     for (var i = 0; i < 3; i++) {
-      var newLoc = new PointLocations("Point " + i, i*50, i*50, false, 0);
+      var newLoc = new PointLocations("Point " + i, 100, (i+1)*100, 0, 0);
 
       this.mapLocations.push(newLoc);
     }
     
     console.log(this.mapLocations);
   }
-      
+  
+  updateCanvas() {
+    this.canvasAPI.initializeCanvas(this.canvasEle);
+    for (var curPntIdx = 0; curPntIdx < this.mapLocations.length; curPntIdx++) {
+      this.canvasAPI.createPointLocation(this.canvasEle,this.mapLocations[curPntIdx]);
+    }
+  }
+  
+  toggleAlert(pointToBlink: number) {
+    this.mapLocations[pointToBlink].curSts = this.mapLocations[pointToBlink].curSts ? 0 : 1;
+    this.updateCanvas();
+  }
+  
+  setBlinkingAlert(pointToBlink: PointLocations) {
+    //this.canvasAPI
+  }
+  
+  stopsetBlinkingAlert(pointToBlink: PointLocations) {
+  }
+  
   constructor() { }
 
   ngOnInit() {
@@ -51,9 +71,8 @@ export class CurrentMapComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    var c = document.getElementById(this.mapId);
-    this.canvasAPI.initializeCanvas(c);
-    this.canvasAPI.createPointLocation(c,this.mapLocations[1]);
+    this.canvasEle = document.getElementById(this.mapId);
+    this.updateCanvas();
     //this.canvasAPI.createAnimateCircle(c);
   }
 

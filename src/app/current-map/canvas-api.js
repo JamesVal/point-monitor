@@ -8,11 +8,20 @@ class CanvasAPI {
   
   createPointLocation(canvas_element, current_point) {
     var ctx = canvas_element.getContext("2d");
-    ctx.fillStyle= "white";
-    //ctx.strokeStyle = "white";
+    
+    
+    ctx.fillStyle = "lightgray";
     ctx.beginPath();
-    ctx.arc(95, 50, 40, 0, 2 * Math.PI);
-    //ctx.stroke();
+    ctx.arc(current_point.xCoord, current_point.yCoord, 6, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    if (current_point.curSts) {
+      ctx.fillStyle = "red";
+    } else {
+      ctx.fillStyle = "green";
+    }
+    ctx.beginPath();
+    ctx.arc(current_point.xCoord, current_point.yCoord, 5, 0, 2 * Math.PI);
     ctx.fill();
   }
   
