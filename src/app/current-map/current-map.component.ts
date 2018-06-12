@@ -3,6 +3,12 @@ import { interval } from 'rxjs/observable/interval';
 
 import CanvasAPI from './canvas-api';
 
+const DEFAULT_PNT_WIDTH = 15;
+const DEFAULT_RADIUS = 15;
+const MAX_RADIUS = 100;
+const RADIUS_RATE = 3;
+const ALPHA_RATE = .03;
+
 class PointLocations {
   label: string;
   xCoord: number;
@@ -19,8 +25,8 @@ class PointLocations {
     this.yCoord = yC;
     this.curSts = cS;
     this.curFlow = cF;
-    this.pntWidth = 15;
-    this.circleRadius = 15;
+    this.pntWidth = DEFAULT_PNT_WIDTH;
+    this.circleRadius = DEFAULT_RADIUS;
     this.circleAlpha = 1.0;
   };
 }
@@ -38,19 +44,25 @@ export class CurrentMapComponent implements OnInit {
   canvasAPI: any;
   mapLocations: PointLocations[] = [];
   frameInterval: number = -1;
-
-  defaultRadius: number = 15;
-  maxRadius: number = 100;
   
   // JJV DEBUG - dummy data
   createDummyLocations() {
     for (var i = 0; i < 3; i++) {
-      var newLoc = new PointLocations("Point " + i, 100, (i+1)*125, 0, 0);
+      var newLoc = new PointLocations("Point " + (i+1), 100, (i+1)*125, 0, 0);
 
       this.mapLocations.push(newLoc);
     }
     
     console.log(this.mapLocations);
+  }
+  
+  isOdd(idx: number): boolean {
+    return ((idx & 0x01) == 1);
+  }
+  
+  getStsString(sts: number): string {
+    if (sts) return "Alarm";
+    else return "Clear";
   }
   
   updateCanvas() {
@@ -60,19 +72,19 @@ export class CurrentMapComponent implements OnInit {
       if (this.mapLocations[curPntIdx].curSts) {
         
         this.canvasAPI.updatePingCircle(this.canvasEle,this.mapLocations[curPntIdx]);
-        this.mapLocations[curPntIdx].circleRadius += 3;
-        this.mapLocations[curPntIdx].circleAlpha -= .03;
+        this.mapLocations[curPntIdx].circleRadius += RADIUS_RATE;
+        this.mapLocations[curPntIdx].circleAlpha -= ALPHA_RATE;
         
         if (this.mapLocations[curPntIdx].circleAlpha < 0) {
           this.mapLocations[curPntIdx].circleAlpha = 0;
         }
         
-        if (this.mapLocations[curPntIdx].circleRadius >= this.maxRadius) {
-          this.mapLocations[curPntIdx].circleRadius = this.defaultRadius;
+        if (this.mapLocations[curPntIdx].circleRadius >= MAX_RADIUS) {
+          this.mapLocations[curPntIdx].circleRadius = DEFAULT_RADIUS;
           this.mapLocations[curPntIdx].circleAlpha = 1.0;
         }
       } else {
-        this.mapLocations[curPntIdx].circleRadius = this.defaultRadius;
+        this.mapLocations[curPntIdx].circleRadius = DEFAULT_RADIUS;
         this.mapLocations[curPntIdx].circleAlpha = 1.0
       }
     }

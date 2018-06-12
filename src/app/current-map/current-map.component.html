@@ -1,9 +1,28 @@
-<div class="map-container">
-  <canvas id="{{mapId}}" height="600" width="600"></canvas>
-</div>
-
 <div class="debug-buttons-container">
   <button id="sim_alert_1" (click)="toggleAlert(0)">Toggle Point 1</button>
   <button id="sim_alert_2" (click)="toggleAlert(1)">Toggle Point 2</button>
   <button id="sim_alert_3" (click)="toggleAlert(2)">Toggle Point 3</button>
+</div>
+
+<div class="map-container">
+  <canvas id="{{mapId}}" height="600" width="600"></canvas>
+</div>
+
+<div class="map-points-container">
+  <table class="map-points-table">
+    <tr>
+      <th>Index</th>
+      <th>Label</th>
+      <th>Location</th>
+      <th>Reading</th>
+      <th>Status</th>
+    </tr>
+    <tr *ngFor="let curLocation of mapLocations; index as idx" [ngClass]="isOdd(idx) ? 'odd' : 'even'">
+      <td>{{idx+1}}</td>
+      <td>{{curLocation.label}}</td>
+      <td>({{curLocation.xCoord}},{{curLocation.yCoord}})</td>
+      <td>{{curLocation.curFlow}}</td>
+      <td [ngClass]="(curLocation.curSts == 1) ? 'alarm' : 'clear'">{{getStsString(curLocation.curSts)}}</td>
+    </tr>
+  </table>
 </div>
