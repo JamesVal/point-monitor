@@ -3,7 +3,6 @@ import { interval } from 'rxjs/observable/interval';
 
 import CanvasAPI from './canvas-api';
 
-
 const DEFAULT_PNT_WIDTH = 15;
 const DEFAULT_RADIUS = 15;
 const MAX_RADIUS = 100;
@@ -26,8 +25,10 @@ const ROBOT_WIDTH = 100;
 const ROBOT_HEIGHT = 85;
 const ROBOT_TREAD_WIDTH = 25;
 const ROBOT_TREAD_HEIGHT = 95;
+const ROBOT_TREADSEG_LENGTH = 15;
+const ROBOT_TREADSEG_STARTPOS = 0;
 
-class RobotBodyLocation {
+class RobotBody {
   id: number;
   label: string;
   xCoord: number;
@@ -36,6 +37,9 @@ class RobotBodyLocation {
   height: number;
   tr_width: number;
   tr_height: number;
+  tr_seg_left_pos: number;
+  tr_seg_right_pos: number;
+  tr_seg_length: number;
   angle: number;
   direction: number;
   rotation: number;
@@ -49,6 +53,9 @@ class RobotBodyLocation {
     this.height = ROBOT_HEIGHT;
     this.tr_width = ROBOT_TREAD_WIDTH;
     this.tr_height = ROBOT_TREAD_HEIGHT;
+    this.tr_seg_left_pos = ROBOT_TREADSEG_STARTPOS;
+    this.tr_seg_right_pos = ROBOT_TREADSEG_STARTPOS;
+    this.tr_seg_length = ROBOT_TREADSEG_LENGTH;
     this.angle = _angle;
     this.direction = DIRECTION_NONE;
     this.rotation = ROTATION_NONE;
@@ -62,7 +69,48 @@ class RobotBodyLocation {
     this.rotation = rotation;
   }
   
-  moveRobot() {
+  moveRobotTreads() {
+    if (this.direction == DIRECTION_FORWARD) {
+      this.tr_seg_left_pos -= 1;
+      if (this.tr_seg_left_pos < 0) {
+        this.tr_seg_left_pos = ROBOT_TREADSEG_LENGTH;
+      }
+      this.tr_seg_right_pos -= 1;
+      if (this.tr_seg_right_pos < 0) {
+        this.tr_seg_right_pos = ROBOT_TREADSEG_LENGTH;
+      }
+    } else if (this.direction == DIRECTION_BACKWARD) {
+      this.tr_seg_left_pos += 1;
+      if (this.tr_seg_left_pos > ROBOT_TREADSEG_LENGTH) {
+        this.tr_seg_left_pos = 0;
+      }
+      this.tr_seg_right_pos += 1;
+      if (this.tr_seg_right_pos > ROBOT_TREADSEG_LENGTH) {
+        this.tr_seg_right_pos = 0;
+      }
+    }
+    if (this.rotation == ROTATION_COUNTERCLOCKWISE) {
+      this.tr_seg_left_pos += 1;
+      if (this.tr_seg_left_pos > ROBOT_TREADSEG_LENGTH) {
+        this.tr_seg_left_pos = 0;
+      }
+      this.tr_seg_right_pos -= 1;
+      if (this.tr_seg_right_pos < 0) {
+        this.tr_seg_right_pos = ROBOT_TREADSEG_LENGTH;
+      }
+    } else if (this.rotation == ROTATION_CLOCKWISE) {
+      this.tr_seg_left_pos -= 1;
+      if (this.tr_seg_left_pos < 0) {
+        this.tr_seg_left_pos = ROBOT_TREADSEG_LENGTH;
+      }
+      this.tr_seg_right_pos += 1;
+      if (this.tr_seg_right_pos > ROBOT_TREADSEG_LENGTH) {
+        this.tr_seg_right_pos = 0;
+      }
+    }
+  }
+  
+  moveRobotBody() {
     if (this.direction == DIRECTION_FORWARD) {
       this.yCoord -= Math.cos(this.angle*Math.PI/180);
       this.xCoord += Math.sin(this.angle*Math.PI/180);
@@ -75,6 +123,11 @@ class RobotBodyLocation {
     } else if (this.rotation == ROTATION_CLOCKWISE) {
       this.angle += 1;
     }
+  }
+  
+  moveRobot() {
+    this.moveRobotTreads();
+    this.moveRobotBody();
   }
 
   stopRobot() {
@@ -144,7 +197,7 @@ export class CurrentMapComponent implements OnInit {
   MAP_ID: string = "map-canvas";
   canvasEle: any;
   canvasAPI: any;
-  robotBodyLocation: RobotBodyLocation;
+  robotBody: RobotBody;
   mapLocations: PointLocations[] = [];
   pointActive: number = 0;
   robotActive: number = 0;
@@ -158,9 +211,9 @@ export class CurrentMapComponent implements OnInit {
       this.mapLocations.push(newLoc);
     }
     
-    this.robotBodyLocation = new RobotBodyLocation(1, "Robot 1", 300, 500, 0);
+    this.robotBody = new RobotBody(1, "Robot 1", 300, 500, 0);
     console.log(this.mapLocations);
-    console.log(this.robotBodyLocation);
+    console.log(this.robotBody);
   }
   
   isOdd(idx: number): boolean {
@@ -174,19 +227,19 @@ export class CurrentMapComponent implements OnInit {
   
   robotDirection(direction: number): void {
     this.robotActive = ROBOT_ACTIVE;
-    this.robotBodyLocation.setDirection(direction);
+    this.robotBody.setDirection(direction);
     this.checkAnimate();
   }
    
   robotRotate(rotation: number): void {
     this.robotActive = ROBOT_ACTIVE;
-    this.robotBodyLocation.setRotation(rotation);
+    this.robotBody.setRotation(rotation);
     this.checkAnimate();
   }
 
   robotStop(): void {
     this.robotActive = ROBOT_INACTIVE;
-    this.robotBodyLocation.stopRobot();
+    this.robotBody.stopRobot();
     this.checkAnimate();
   }
   
@@ -208,8 +261,8 @@ export class CurrentMapComponent implements OnInit {
   }
   
   updateRobot() {
-    this.robotBodyLocation.moveRobot();
-    this.canvasAPI.updateRobotBodyPosition(this.canvasEle,this.robotBodyLocation);
+    this.robotBody.moveRobot();
+    this.canvasAPI.updateRobotBody(this.canvasEle,this.robotBody);
   }
   
   updatePoints() {
