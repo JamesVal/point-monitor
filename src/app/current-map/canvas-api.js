@@ -77,7 +77,10 @@ class CanvasAPI {
     ctx.translate(current_robot.xCoord,current_robot.yCoord);
     ctx.rotate((current_robot.angle) * Math.PI / 180);
     ctx.fillRect(0-(current_robot.width/2),0-(current_robot.height/2),current_robot.width, current_robot.height);
+    ctx.fillRect((current_robot.width/2)+3,0-(current_robot.tr_height/2),current_robot.tr_width, current_robot.tr_height);
+    ctx.fillRect(-((current_robot.width/2)+3+current_robot.tr_width),0-(current_robot.tr_height/2),current_robot.tr_width, current_robot.tr_height);
     ctx.restore();
+    
     
     //ctx.fillRect(current_robot.xCoord-(current_robot.width/2),current_robot.yCoord-(current_robot.height/2),current_robot.width, current_robot.height);
   }

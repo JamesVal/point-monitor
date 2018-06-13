@@ -10,15 +10,19 @@ const RADIUS_RATE = 3;
 const ALPHA_RATE = .03;
 
 const ROBOT_WIDTH = 100;
-const ROBOT_HEIGHT = 50;
+const ROBOT_HEIGHT = 85;
+const ROBOT_TREAD_WIDTH = 25;
+const ROBOT_TREAD_HEIGHT = 95;
 
 class RobotBodyLocation {
   id: number;
-  label: number;
+  label: string;
   xCoord: number;
   yCoord: number;
   width: number;
   height: number;
+  tr_width: number;
+  tr_height: number;
   angle: number;
   direction: number;
   rotation: number;
@@ -30,6 +34,8 @@ class RobotBodyLocation {
     this.yCoord = _yCoord;
     this.width = ROBOT_WIDTH;
     this.height = ROBOT_HEIGHT;
+    this.tr_width = ROBOT_TREAD_WIDTH;
+    this.tr_height = ROBOT_TREAD_HEIGHT;
     this.angle = _angle;
     this.direction = 0;
     this.rotation = 0;
@@ -47,7 +53,7 @@ class PointLocations {
   circleRadius: number;
   circleAlpha: number;
   
-  constructor(_id:number; lbl: string, xC: number, yC: number, cS: number, cF: number) {
+  constructor(_id:number, lbl: string, xC: number, yC: number, cS: number, cF: number) {
     this.id = _id;
     this.label = lbl;
     this.xCoord = xC;
