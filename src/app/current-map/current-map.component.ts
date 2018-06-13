@@ -28,11 +28,14 @@ const ROBOT_TREAD_HEIGHT = 95;
 const ROBOT_TREADSEG_LENGTH = 15;
 const ROBOT_TREADSEG_STARTPOS = 0;
 
-class RobotBody {
+class CanvasObject {
   id: number;
   label: string;
   xCoord: number;
   yCoord: number;
+}
+
+class RobotBody extends CanvasObject {
   width: number;
   height: number;
   tr_width: number;
@@ -45,6 +48,7 @@ class RobotBody {
   rotation: number;
   
   constructor(_id: number, _label: string, _xCoord: number, _yCoord: number, _angle: number) {
+    super();
     this.id = _id;
     this.label = _label;
     this.xCoord = _xCoord;
@@ -136,11 +140,7 @@ class RobotBody {
   }
 }
 
-class PointLocations {
-  id:number;
-  label: string;
-  xCoord: number;
-  yCoord: number;
+class PointLocations extends CanvasObject {
   curSts: number;
   curFlow: number;
   pntWidth: number;
@@ -148,6 +148,7 @@ class PointLocations {
   circleAlpha: number;
   
   constructor(_id:number, lbl: string, xC: number, yC: number, cS: number, cF: number) {
+    super();
     this.id = _id;
     this.label = lbl;
     this.xCoord = xC;
