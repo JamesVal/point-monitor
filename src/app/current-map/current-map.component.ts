@@ -3,11 +3,24 @@ import { interval } from 'rxjs/observable/interval';
 
 import CanvasAPI from './canvas-api';
 
+
 const DEFAULT_PNT_WIDTH = 15;
 const DEFAULT_RADIUS = 15;
 const MAX_RADIUS = 100;
 const RADIUS_RATE = 3;
 const ALPHA_RATE = .03;
+const POINT_INACTIVE = 0;
+const POINT_ACTIVE = 1;
+const ROBOT_INACTIVE = 0;
+const ROBOT_ACTIVE = 1;
+
+const DIRECTION_NONE = 0;
+const DIRECTION_FORWARD = 1;
+const DIRECTION_BACKWARD = 2;
+
+const ROTATION_NONE = 0;
+const ROTATION_COUNTERCLOCKWISE = 1;
+const ROTATION_CLOCKWISE = 2;
 
 const ROBOT_WIDTH = 100;
 const ROBOT_HEIGHT = 85;
@@ -37,8 +50,36 @@ class RobotBodyLocation {
     this.tr_width = ROBOT_TREAD_WIDTH;
     this.tr_height = ROBOT_TREAD_HEIGHT;
     this.angle = _angle;
-    this.direction = 0;
-    this.rotation = 0;
+    this.direction = DIRECTION_NONE;
+    this.rotation = ROTATION_NONE;
+  }
+  
+  setDirection(direction: number) {
+    this.direction = direction;
+  }
+  
+  setRotation(rotation: number) {
+    this.rotation = rotation;
+  }
+  
+  moveRobot() {
+    if (this.direction == DIRECTION_FORWARD) {
+      this.yCoord -= Math.cos(this.angle*Math.PI/180);
+      this.xCoord += Math.sin(this.angle*Math.PI/180);
+    } else if (this.direction == DIRECTION_BACKWARD) {
+      this.yCoord += Math.cos(this.angle*Math.PI/180);
+      this.xCoord -= Math.sin(this.angle*Math.PI/180);
+    }
+    if (this.rotation == ROTATION_COUNTERCLOCKWISE) {
+      this.angle -= 1;
+    } else if (this.rotation == ROTATION_CLOCKWISE) {
+      this.angle += 1;
+    }
+  }
+
+  stopRobot() {
+    this.direction = DIRECTION_NONE;
+    this.rotation = ROTATION_NONE;
   }
 }
 
@@ -63,7 +104,34 @@ class PointLocations {
     this.pntWidth = DEFAULT_PNT_WIDTH;
     this.circleRadius = DEFAULT_RADIUS;
     this.circleAlpha = 1.0;
-  };
+  }
+  
+  setStatus(newSts: number) {
+    this.curSts = newSts;
+  }
+  
+  getStatus() {
+    return this.curSts;
+  }
+  
+  updateCircle() {
+    this.circleRadius += RADIUS_RATE;
+    this.circleAlpha -= ALPHA_RATE;
+    
+    if (this.circleAlpha < 0) {
+      this.circleAlpha = 0;
+    }
+        
+    if (this.circleRadius >= MAX_RADIUS) {
+      this.circleRadius = DEFAULT_RADIUS;
+      this.circleAlpha = 1.0;
+    }
+  }
+  
+  resetCircle() {
+    this.circleRadius = MAX_RADIUS;
+    this.circleAlpha = 0.0;
+  }
 }
 
 @Component({
@@ -73,8 +141,7 @@ class PointLocations {
 })
 
 export class CurrentMapComponent implements OnInit {
-
-  mapId: string = "map-canvas";
+  MAP_ID: string = "map-canvas";
   canvasEle: any;
   canvasAPI: any;
   robotBodyLocation: RobotBodyLocation;
@@ -106,35 +173,33 @@ export class CurrentMapComponent implements OnInit {
   }
   
   robotDirection(direction: number): void {
-    this.robotActive = 1;
-    this.robotBodyLocation.direction = direction;
+    this.robotActive = ROBOT_ACTIVE;
+    this.robotBodyLocation.setDirection(direction);
     this.checkAnimate();
-    //console.log("move");
   }
-  
+   
   robotRotate(rotation: number): void {
-    this.robotActive = 1;
-    this.robotBodyLocation.rotation = rotation;
+    this.robotActive = ROBOT_ACTIVE;
+    this.robotBodyLocation.setRotation(rotation);
     this.checkAnimate();
-    //console.log("rotate");
   }
 
   robotStop(): void {
-    this.robotActive = 0;
-    this.robotBodyLocation.direction = 0;
-    this.robotBodyLocation.rotation = 0;
+    this.robotActive = ROBOT_INACTIVE;
+    this.robotBodyLocation.stopRobot();
     this.checkAnimate();
-    //console.log("stop");
   }
-
+  
   toggleAlert(pointToBlink: number) {
-    this.mapLocations[pointToBlink].curSts = this.mapLocations[pointToBlink].curSts ? 0 : 1;
+    var newSts = this.mapLocations[pointToBlink].getStatus() ? POINT_INACTIVE : POINT_ACTIVE;
     
-    this.pointActive = 0;
+    this.mapLocations[pointToBlink].setStatus(newSts);
+        
+    this.pointActive = POINT_INACTIVE;
     
     for (var curPntIdx = 0; curPntIdx < this.mapLocations.length; curPntIdx++) {
-      if (this.mapLocations[curPntIdx].curSts) {
-        this.pointActive = 1;
+      if (this.mapLocations[curPntIdx].getStatus()) {
+        this.pointActive = POINT_ACTIVE;
       }
     }
     
@@ -143,44 +208,19 @@ export class CurrentMapComponent implements OnInit {
   }
   
   updateRobot() {
-    if (this.robotBodyLocation.direction == 1) {
-      this.robotBodyLocation.yCoord -= Math.cos(this.robotBodyLocation.angle*Math.PI/180);
-      this.robotBodyLocation.xCoord += Math.sin(this.robotBodyLocation.angle*Math.PI/180);
-    } else if (this.robotBodyLocation.direction == 2) {
-      this.robotBodyLocation.yCoord += Math.cos(this.robotBodyLocation.angle*Math.PI/180);
-      this.robotBodyLocation.xCoord -= Math.sin(this.robotBodyLocation.angle*Math.PI/180);
-    }
-    
-    if (this.robotBodyLocation.rotation == 1) {
-      this.robotBodyLocation.angle -= 1;
-    } else if (this.robotBodyLocation.rotation == 2) {
-      this.robotBodyLocation.angle += 1;
-    }
-    
+    this.robotBodyLocation.moveRobot();
     this.canvasAPI.updateRobotBodyPosition(this.canvasEle,this.robotBodyLocation);
   }
   
   updatePoints() {
     for (var curPntIdx = 0; curPntIdx < this.mapLocations.length; curPntIdx++) {
-      this.canvasAPI.updatePointLocation(this.canvasEle,this.mapLocations[curPntIdx]);
-      if (this.mapLocations[curPntIdx].curSts) {
-        
-        this.canvasAPI.updatePingCircle(this.canvasEle,this.mapLocations[curPntIdx]);
-        this.mapLocations[curPntIdx].circleRadius += RADIUS_RATE;
-        this.mapLocations[curPntIdx].circleAlpha -= ALPHA_RATE;
-        
-        if (this.mapLocations[curPntIdx].circleAlpha < 0) {
-          this.mapLocations[curPntIdx].circleAlpha = 0;
-        }
-        
-        if (this.mapLocations[curPntIdx].circleRadius >= MAX_RADIUS) {
-          this.mapLocations[curPntIdx].circleRadius = DEFAULT_RADIUS;
-          this.mapLocations[curPntIdx].circleAlpha = 1.0;
-        }
+      if (this.mapLocations[curPntIdx].getStatus()) {
+        this.mapLocations[curPntIdx].updateCircle();
       } else {
-        this.mapLocations[curPntIdx].circleRadius = DEFAULT_RADIUS;
-        this.mapLocations[curPntIdx].circleAlpha = 1.0
+        this.mapLocations[curPntIdx].resetCircle();
       }
+      this.canvasAPI.updatePointLocation(this.canvasEle,this.mapLocations[curPntIdx]);
+      this.canvasAPI.updatePingCircle(this.canvasEle,this.mapLocations[curPntIdx]);
     }
   }
   
@@ -190,13 +230,13 @@ export class CurrentMapComponent implements OnInit {
     this.updatePoints();
     this.updateRobot();
   }
-  
+    
   checkAnimate() {                    
-    if ((this.pointActive == 1) || (this.robotActive == 1)) {
+    if ((this.pointActive == POINT_ACTIVE) || (this.robotActive == ROBOT_ACTIVE)) {
       this.animateCanvas();
     }
 
-    if ((this.pointActive != 1) && (this.robotActive != 1)) {
+    if ((this.pointActive != POINT_ACTIVE) && (this.robotActive != ROBOT_ACTIVE)) {
       this.stopAnimateCanvas();
     }
   }
@@ -227,7 +267,7 @@ export class CurrentMapComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    this.canvasEle = document.getElementById(this.mapId);
+    this.canvasEle = document.getElementById(this.MAP_ID);
     this.updateCanvas();
   }
 
