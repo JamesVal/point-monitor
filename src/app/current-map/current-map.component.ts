@@ -305,7 +305,7 @@ export class CurrentMapComponent implements OnInit {
   }
   
   stopAnimateCanvas() {
-    if (this.frameInterval != -1 ) {
+    if (this.frameInterval != -1) {
       clearInterval(this.frameInterval);
       this.frameInterval = -1;
     }
